@@ -1,6 +1,7 @@
 #include "plugin.h"
 #include "events.h"
 #include "bot.h"
+#include "util.h"
 #include <chrono>
 
 class FactoidPlugin : public Plugin
@@ -60,7 +61,7 @@ bool FactoidPlugin::factoid(Event *e)
 	std::shared_ptr<ConfigNode> v = bot->config->get("factoids." + ev->params[0]);
 	if(v->type() != NodeType::Null)
 	{
-		bot->conn->send_privmsg(ev->target, v->as_map()["value"].string);
+		bot->conn->send_privmsg(ev->target, bot->conn->antiping(ev->target, v->as_map()["value"].string));
 	}
 	else
 	{
@@ -111,7 +112,7 @@ bool FactoidPlugin::factoid_info(Event *e)
 	if(v->type() != NodeType::Null)
 	{
 		auto m = v->as_map();
-		bot->conn->send_privmsg(ev->target, "Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer));
+		bot->conn->send_privmsg(ev->target, bot->conn->antiping(ev->target, "Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer)));
 	}
 	else
 	{
