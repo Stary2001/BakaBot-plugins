@@ -1,6 +1,7 @@
 #include "plugin.h"
 #include "events.h"
 #include "bot.h"
+#include <chrono>
 
 class FactoidPlugin : public Plugin
 {
@@ -11,6 +12,8 @@ public:
 
 private:
     bool factoid(Event *e);
+    bool factoid_info(Event *e);
+
     Bot *bot;
 };
 
@@ -30,12 +33,15 @@ void FactoidPlugin::init(PluginHost *h)
 
 	using namespace std::placeholders;
 	b->add_handler("command/f", "factoid", std::bind(&FactoidPlugin::factoid, this, _1));
+	b->add_handler("command/finfo", "factoid", std::bind(&FactoidPlugin::factoid_info, this, _1));
+
 	bot = b;
 }
 
 void FactoidPlugin::deinit(PluginHost *h)
 {
 	bot->remove_handler("command/f", "factoid");
+	bot->remove_handler("command/finfo", "factoid");
 }
 
 bool FactoidPlugin::factoid(Event *e)
@@ -74,9 +80,34 @@ bool FactoidPlugin::factoid(Event *e)
 		ConfigValue vv;
 		vv.type = NodeType::Map;
 		vv.map["value"] = ConfigValue(value);
+		vv.map["time"] = ConfigValue(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 		vv.map["setter"] = ConfigValue(ev->sender->nick);
 
 		bot->config->set("factoids." + n, vv);
+	}
+
+	return true;
+}
+
+bool FactoidPlugin::factoid_info(Event *e)
+{
+	IRCCommandEvent *ev = reinterpret_cast<IRCCommandEvent*>(e);
+	
+	std::string usage = "Usage: finfo [name]";
+	if(ev->params.size() == 0)
+	{
+		bot->conn->send_privmsg(ev->target, usage);
+		return true;	
+	}
+	std::shared_ptr<ConfigNode> v = bot->config->get("factoids." + ev->params[0]);
+	if(v->type() != NodeType::Null)
+	{
+		auto m = v->as_map();
+		bot->conn->send_privmsg(ev->target, "Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer));
+	}
+	else
+	{
+		bot->conn->send_privmsg(ev->target, "Factoid '" + ev->params[0] + "' not found!");
 	}
 
 	return true;
