@@ -8,7 +8,7 @@
 
 struct SedMessage
 {
-	User sender;
+	User *sender;
 	std::string message;
 };
 
@@ -140,7 +140,7 @@ bool SedPlugin::msg(Event *e)
 					if(std::regex_search(it->message, r, match_flags))
 					{
 						std::string resp = std::regex_replace(it->message, r, replacement, match_flags);
-						bot->conn->send_privmsg(ev->target, "<" + it->sender.nick + "> " + resp);
+						bot->conn->send_privmsg(ev->target, "<" + it->sender->nick + "> " + resp);
 						
 						SedMessage m;
 						m.sender = it->sender;
