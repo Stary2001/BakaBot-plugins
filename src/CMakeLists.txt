@@ -9,10 +9,22 @@ include_directories(
     $ENV{COREPATH}/include/sock
 )
 
-file(GLOB_RECURSE SOURCES "*.cpp")
-foreach(F ${SOURCES})
-  string(REGEX MATCH "([^/]+)$" F2 ${F})
-  string(REPLACE ".cpp" "" NAME ${F2})
-  add_library(${NAME} MODULE ${F})
+# http://stackoverflow.com/questions/7787823/cmake-how-to-get-the-name-of-all-subdirectories-of-a-directory
+MACRO(SUBDIRLIST result curdir)
+  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  SET(dirlist "")
+  FOREACH(child ${children})
+    IF(IS_DIRECTORY ${curdir}/${child})
+        LIST(APPEND dirlist ${child})
+    ENDIF()
+  ENDFOREACH()
+  SET(${result} ${dirlist})
+ENDMACRO()
+
+SUBDIRLIST(DIRS ${CMAKE_CURRENT_SOURCE_DIR})
+
+foreach(NAME ${DIRS})
+  file(GLOB_RECURSE ${NAME}SOURCES ${NAME}/*)
+  add_library(${NAME} MODULE ${${NAME}SOURCES})
   SET_TARGET_PROPERTIES(${NAME} PROPERTIES PREFIX "")
-endforeach(F)
+endforeach(NAME)
