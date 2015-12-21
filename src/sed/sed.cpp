@@ -1,5 +1,6 @@
 #include <iostream>
 #include <regex>
+#include <algorithm>
 #include "plugin.h"
 #include "events.h"
 #include "bot.h"
@@ -21,6 +22,8 @@ public:
 
 private:
     bool msg(Event *e);
+    bool toggle(Event *e);
+
     std::map<std::string, std::vector<SedMessage>> scrollback;
     Bot *bot;
 };
@@ -41,6 +44,8 @@ void SedPlugin::init(PluginHost *h)
 	Bot *b = (Bot*)h;
 
 	using namespace std::placeholders;
+
+	b->add_handler("command/sed", "sed", std::bind(&SedPlugin::toggle, this, _1));
 	b->add_handler("irc/message", "sed", std::bind(&SedPlugin::msg, this, _1));
 
 	//scrollback = std::map<Bot *, std::map<std::string, std::vector<std::string>>>();
@@ -52,6 +57,63 @@ void SedPlugin::deinit(PluginHost *h)
 {
 	std::cout << "deinit" << std::endl;
 	bot->remove_handler("irc/message", "sed");
+	bot->remove_handler("command/sed", "sed");
+}
+
+bool SedPlugin::toggle(Event *e)
+{
+	IRCCommandEvent *ev = reinterpret_cast<IRCCommandEvent*>(e);
+
+	if(ev->target[0] != '#')
+		return true;
+
+	std::shared_ptr<ConfigNode> v = bot->config->get("sed.disable");
+
+	if(v->type() == NodeType::Null)
+	{
+		ConfigValue vv;
+		vv.type = NodeType::List;
+		bot->config->set("sed.disable", vv);
+	}
+
+	std::vector<std::string>::iterator it = std::find(v->as_list().begin(), v->as_list().end(), ev->target);
+	bool exists = it != v->as_list().end();
+	bool state = true; // whether it should be enabled
+
+	if(ev->params.size() == 0)
+	{
+		state = exists;
+	}
+	else
+	{
+		if(ev->params[0] == "on")
+		{
+			state = true;
+		}
+		else if(ev->params[0] == "off")
+		{
+			state = false;
+		}
+		else
+		{
+			bot->conn->send_privmsg(ev->target, "Usage: sed [on|off]");
+			return true;
+		}
+	}
+
+	if(state && exists)
+	{
+		v->as_list().erase(it);
+		bot->conn->send_privmsg(ev->target, "Sed enabled.");
+	}
+	else if(!state && !exists)
+	{
+		v->as_list().push_back(ev->target);
+		bot->conn->send_privmsg(ev->target, "Sed disabled.");
+	}
+
+
+	return true;
 }
 
 bool SedPlugin::msg(Event *e)
@@ -60,6 +122,17 @@ bool SedPlugin::msg(Event *e)
 
 	if(ev->target[0] == '#') // to a channel?
 	{
+		std::shared_ptr<ConfigNode> v = bot->config->get("sed.disable");
+
+		if(v->type() == NodeType::List)
+		{
+			auto it = std::find(v->as_list().begin(), v->as_list().end(), ev->target);
+			if(it != v->as_list().end())
+			{
+				return true;
+			}
+		}
+
 		if(scrollback.find(ev->target) == scrollback.end())
 		{
 			scrollback[ev->target] = std::vector<SedMessage>();
