@@ -129,7 +129,7 @@ bool SedPlugin::msg(Event *e)
 			auto it = std::find(v->as_list().begin(), v->as_list().end(), ev->target);
 			if(it != v->as_list().end())
 			{
-				return true;
+				return false;
 			}
 		}
 
