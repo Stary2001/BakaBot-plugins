@@ -2,7 +2,7 @@ set (CMAKE_CXX_STANDARD 11)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules)
 
-find_path(BOT bot.h HINTS ../../BakaBot/src HINTS ../../src NO_DEFAULT_PATH)
+find_path(BOT bot.h HINTS ../../BakaBot/src HINTS ../../src HINTS ../../bakabot/src NO_DEFAULT_PATH)
 find_path(SOCK include/connection.h HINTS ../../corelibs/libsock ../../../corelibs/libsock NO_DEFAULT_PATH)
 find_path(PLUGIN include/plugin.h HINTS ../../corelibs/libplugin ../../../corelibs/libplugin NO_DEFAULT_PATH)
 
