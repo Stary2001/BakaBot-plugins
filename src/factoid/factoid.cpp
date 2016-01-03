@@ -96,6 +96,8 @@ bool FactoidPlugin::factoid_set(Event *e)
 	vv.map["time"] = ConfigValue(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 	vv.map["setter"] = ConfigValue(ev->sender->nick);
 	bot->config->set("factoids." + n, vv);
+
+	return true;
 }
 
 bool FactoidPlugin::factoid_info(Event *e)

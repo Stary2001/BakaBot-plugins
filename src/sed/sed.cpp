@@ -143,8 +143,8 @@ bool SedPlugin::msg(Event *e)
 		if(ev->message.substr(0, 2) == "s/")
 		{
 			std::cout << ev->message << " " << scroll.size() << std::endl;
-			int beg = 2; 
-			int middle = ev->message.find('/', beg + 1);
+			size_t beg = 2; 
+			size_t middle = ev->message.find('/', beg + 1);
 
 			while(true)
 			{
@@ -162,7 +162,7 @@ bool SedPlugin::msg(Event *e)
 				}
 			}
 
-			int end = ev->message.find('/', middle + 1);
+			size_t end = ev->message.find('/', middle + 1);
 			while(true)
 			{	
 				if(end != std::string::npos && ev->message[middle - 1] == '\\') 
