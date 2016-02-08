@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "plugin.h"
 #include "events.h"
+#include "command.h"
 #include "bot.h"
 
 #define SCROLLBACK_SIZE 100
@@ -38,34 +39,10 @@ std::string SedPlugin::name()
 	return "sed";
 }
 
-void SedPlugin::init(PluginHost *h)
+COMMAND(togglesed)
 {
-	std::cout << "init" << std::endl;
-	Bot *b = (Bot*)h;
-
-	using namespace std::placeholders;
-
-	b->add_handler("command/sed", "sed", std::bind(&SedPlugin::toggle, this, _1));
-	b->add_handler("irc/message", "sed", std::bind(&SedPlugin::msg, this, _1));
-
-	//scrollback = std::map<Bot *, std::map<std::string, std::vector<std::string>>>();
-	scrollback = std::map<std::string, std::vector<SedMessage>>();
-	bot = b;
-}
-
-void SedPlugin::deinit(PluginHost *h)
-{
-	std::cout << "deinit" << std::endl;
-	bot->remove_handler("irc/message", "sed");
-	bot->remove_handler("command/sed", "sed");
-}
-
-bool SedPlugin::toggle(Event *e)
-{
-	IRCCommandEvent *ev = reinterpret_cast<IRCCommandEvent*>(e);
-
-	if(ev->target[0] != '#')
-		return true;
+	if(info->target[0] != '#')
+		return;
 
 	std::shared_ptr<ConfigNode> v = bot->config->get("sed.disable");
 
@@ -76,45 +53,21 @@ bool SedPlugin::toggle(Event *e)
 		bot->config->set("sed.disable", vv);
 	}
 
-	std::vector<std::string>::iterator it = std::find(v->as_list().begin(), v->as_list().end(), ev->target);
+	std::vector<std::string>::iterator it = std::find(v->as_list().begin(), v->as_list().end(), info->target);
 	bool exists = it != v->as_list().end();
-	bool state = true; // whether it should be enabled
 
-	if(ev->params.size() == 0)
-	{
-		state = exists;
-	}
-	else
-	{
-		if(ev->params[0] == "on")
-		{
-			state = true;
-		}
-		else if(ev->params[0] == "off")
-		{
-			state = false;
-		}
-		else
-		{
-			bot->conn->send_privmsg(ev->target, "Usage: sed [on|off]");
-			return true;
-		}
-	}
-
-	if(state && exists)
+	if(exists)
 	{
 		v->as_list().erase(it);
-		bot->conn->send_privmsg(ev->target, "Sed enabled.");
+		bot->conn->send_privmsg(info->target, "Sed enabled.");
 	}
-	else if(!state && !exists)
+	else if(!exists)
 	{
-		v->as_list().push_back(ev->target);
-		bot->conn->send_privmsg(ev->target, "Sed disabled.");
+		v->as_list().push_back(info->target);
+		bot->conn->send_privmsg(info->target, "Sed disabled.");
 	}
-
-
-	return true;
 }
+END_COMMAND
 
 bool SedPlugin::msg(Event *e)
 {
@@ -243,4 +196,24 @@ bool SedPlugin::msg(Event *e)
 		
 	}
 	return false;
+}
+
+void SedPlugin::init(PluginHost *h)
+{
+	Bot *b = (Bot*)h;
+
+	REGISTER_COMMAND(b, togglesed);
+
+	using namespace std::placeholders;
+	b->add_handler("irc/message", "sed", std::bind(&SedPlugin::msg, this, _1));
+
+	//scrollback = std::map<Bot *, std::map<std::string, std::vector<std::string>>>();
+	scrollback = std::map<std::string, std::vector<SedMessage>>();
+	bot = b;
+}
+
+void SedPlugin::deinit(PluginHost *h)
+{
+	REMOVE_COMMAND(bot, togglesed);
+	bot->remove_handler("command/sed", "sed");
 }

@@ -33,6 +33,7 @@ endif()
 include_directories(
 	${BOT}
 	${BOT}/event
+    ${BOT}/commands
     ${PLUGIN}/include
     ${SOCK}/include
 )
