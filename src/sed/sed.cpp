@@ -205,7 +205,7 @@ void SedPlugin::init(PluginHost *h)
 	REGISTER_COMMAND(b, togglesed);
 
 	using namespace std::placeholders;
-	b->add_handler("irc/message", "sed", std::bind(&SedPlugin::msg, this, _1));
+	b->add_handler("irc/privmsg", "sed", std::bind(&SedPlugin::msg, this, _1));
 
 	//scrollback = std::map<Bot *, std::map<std::string, std::vector<std::string>>>();
 	scrollback = std::map<std::string, std::vector<SedMessage>>();
