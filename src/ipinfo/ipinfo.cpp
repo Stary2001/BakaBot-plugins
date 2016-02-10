@@ -29,8 +29,7 @@ COMMAND(ipinfo)
 {
 	if(info->in.size() == 0)
 	{
-		bot->conn->send_privmsg(info->target, "Usage: ipinfo [ips]");
-		return;
+		info->error("Usage: ipinfo [ips]");
 	}
 
 	CommandData *vv = info->pop();
@@ -47,8 +46,7 @@ COMMAND(ipinfo)
 		}
 		else
 		{
-			//todo: error
-			bot->conn->send_privmsg(info->target, "Something went wrong!");
+			info->error("HTTP request failed!");
 		}
 	}
 }

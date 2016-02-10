@@ -38,9 +38,7 @@ COMMAND(google)
 {
 	if(info->in.size() == 0)
 	{
-		//todo: error
-		bot->conn->send_privmsg(info->target, "Pass something, at least..");
-		return;
+		info->error("Usage: google [query]");
 	}
 
 	std::string q = info->pop()->to_string();
@@ -52,9 +50,7 @@ COMMAND(google)
 	std::string resp = util::http_request("https://www.googleapis.com/customsearch/v1?", {{"q", q}, {"key", k}, {"cx", customid}});
 	if(resp == "")
 	{
-		//todo: error
-		bot->conn->send_privmsg(info->target, "Something went wrong!");
-		return;
+		info->error("HTTP request failed!");
 	}
 
 	Json::Value root;
@@ -70,14 +66,12 @@ COMMAND(google)
 		}
 		else
 		{
-			// todo: error
-			bot->conn->send_privmsg(info->target, "No results!");
+			info->error("No results!");
 		}
 	}
 	else
 	{
-		// todo: error
-		bot->conn->send_privmsg(info->target, "Google returned invalid JSON!");
+		info->error("Failed to parse json!");
 	}
 }
 END_COMMAND

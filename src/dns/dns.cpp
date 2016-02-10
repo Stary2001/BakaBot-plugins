@@ -33,9 +33,7 @@ COMMAND(dns)
 {
     if(info->in.size() == 0)
 	{
-		//todo: error
-		bot->conn->send_privmsg(info->target, "Usage: dns [hosts]");
-		return;
+		info->error("Usage: dns [hosts]");
 	}
 
 	addrinfo *r, *rp;
@@ -51,9 +49,7 @@ COMMAND(dns)
 		int res = getaddrinfo(s.c_str(), "80", &hints, &r);
 		if(res != 0)
 		{
-			//todo: error
-			bot->conn->send_privmsg(info->target, "getaddrinfo returned errno " + std::to_string(errno));
-			continue;
+			info->error("getaddrinfo returned errno " + std::to_string(errno));
 		}
 
 		std::vector<CommandData*> out;
@@ -79,9 +75,11 @@ COMMAND(dns)
 
 			if(inet_ntop(sa->sa_family, v, addr, INET6_ADDRSTRLEN+1) == NULL)
 			{
-				//todo: error
-				bot->conn->send_privmsg(info->target, "inet_ntop returned errno " + std::to_string(errno));
-				continue;
+				delete[] addr;
+				freeaddrinfo(r);
+
+				info->error("inet_ntop returned errno " + std::to_string(errno));
+				// continue;
 			}
 
 			out.push_back(new IPData(addr));

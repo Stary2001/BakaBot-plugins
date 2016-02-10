@@ -31,8 +31,7 @@ COMMAND(f)
 	if(info->in.size() == 0)
 	{
 		//todo: error
-		bot->conn->send_privmsg(info->target, usage);
-		return;
+		info->error(usage);
 	}
 
 	std::string n = info->pop()->to_string();
@@ -40,16 +39,12 @@ COMMAND(f)
 	std::shared_ptr<ConfigNode> v = bot->config->get("factoids." + n);
 	if(v->type() != NodeType::Null)
 	{
-
 		info->next->in.push_back(new StringData(v->as_map()["value"].string));
 	}
 	else
 	{
-		//todo: error
-		bot->conn->send_privmsg(info->target, "Factoid '" + n + "' not found!");
+		info->error("Factoid '" + n + "' not found!");
 	}
-
-	return;
 }
 END_COMMAND
 
@@ -58,14 +53,11 @@ COMMAND(setf)
 	std::string usage = "Usage: setf [name] \"[value]\"";
 	if(info->in.size() != 2)
 	{
-		//todo: error
-		bot->conn->send_privmsg(info->target, usage);
-		return;
+		info->error(usage);
 	}
 
 	std::string n = info->pop()->to_string();
 	std::string value = info->pop()->to_string();
-
 
 	ConfigValue vv;
 	vv.type = NodeType::Map;
@@ -73,8 +65,6 @@ COMMAND(setf)
 	vv.map["time"] = ConfigValue(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
 	vv.map["setter"] = ConfigValue(info->sender->nick);
 	bot->config->set("factoids." + n, vv);
-
-	return;
 }
 END_COMMAND
 
@@ -84,8 +74,7 @@ COMMAND(finfo)
 	std::string usage = "Usage: finfo [name]";
 	if(info->in.size() == 0)
 	{
-		bot->conn->send_privmsg(info->target, usage);
-		return;	
+		info->error(usage);	
 	}
 
 	std::string n = info->pop()->to_string();
@@ -94,14 +83,12 @@ COMMAND(finfo)
 	if(v->type() != NodeType::Null)
 	{
 		auto m = v->as_map();
-		bot->conn->send_privmsg(info->target, bot->conn->antiping(info->target, "Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer)));
+		info->next->in.push_back(new StringData("Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer)));
 	}
 	else
 	{
-		bot->conn->send_privmsg(info->target, "Factoid '" + n + "' not found!");
+		info->error("Factoid '" + n + "' not found!");
 	}
-
-	return;
 }
 END_COMMAND
 
