@@ -118,7 +118,7 @@ bool SedPlugin::msg(Event *e)
 			size_t end = ev->message.find('/', middle + 1);
 			while(true)
 			{	
-				if(end != std::string::npos && ev->message[middle - 1] == '\\') 
+				if(end != std::string::npos && ev->message[end - 1] == '\\') 
 				{
 					end = ev->message.find('/', end + 1);
 				}
