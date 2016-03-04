@@ -8,10 +8,18 @@
 
 #define SCROLLBACK_SIZE 100
 
+
+enum class MessageType
+{
+	Normal,
+	Me
+};
+
 struct SedMessage
 {
 	User *sender;
 	std::string message;
+	MessageType type;
 };
 
 class SedPlugin : public Plugin
@@ -23,11 +31,11 @@ public:
 
 private:
     bool msg(Event *e);
-    bool toggle(Event *e);
 
     std::map<std::string, std::vector<SedMessage>> scrollback;
     Bot *bot;
 };
+
 
 extern "C" Plugin* plugin_init(PluginHost *h)
 {
@@ -95,7 +103,6 @@ bool SedPlugin::msg(Event *e)
 		
 		if(ev->message.substr(0, 2) == "s/")
 		{
-			std::cout << ev->message << " " << scroll.size() << std::endl;
 			size_t beg = 2; 
 			size_t middle = ev->message.find('/', beg + 1);
 
@@ -166,7 +173,14 @@ bool SedPlugin::msg(Event *e)
 					if(std::regex_search(it->message, r, match_flags))
 					{
 						std::string resp = std::regex_replace(it->message, r, replacement, match_flags);
-						bot->conn->send_privmsg(ev->target, "<" + it->sender->nick + "> " + resp);
+						if(it->type == MessageType::Normal)
+						{
+							bot->conn->send_privmsg(ev->target, "<" + it->sender->nick + "> " + resp);
+						}
+						else if(it->type == MessageType::Me)
+						{
+							bot->conn->send_privmsg(ev->target, "* " + it->sender->nick + " " + resp);
+						}
 						
 						SedMessage m;
 						m.sender = it->sender;
@@ -185,7 +199,23 @@ bool SedPlugin::msg(Event *e)
 		{
 			SedMessage m;
 			m.sender = ev->sender;
-			m.message = ev->message;
+			if(ev->message[0] == '\x01' && ev->message[ev->message.length()-1] == '\x01') // ctcp....
+			{
+				m.message = ev->message.substr(1, ev->message.length()-2);
+				size_t p = m.message.find(' ');
+				if(p == std::string::npos)
+				{
+					// malformed ctcp
+					return false;
+				}
+				m.message = m.message.substr(p + 1);
+				m.type = MessageType::Me;
+			}
+			else
+			{
+				m.message = ev->message;
+				m.type = MessageType::Normal;
+			}
 			scroll.push_back(m);
 			if(scroll.size() >= SCROLLBACK_SIZE)
 			{
