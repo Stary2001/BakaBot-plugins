@@ -185,6 +185,7 @@ bool SedPlugin::msg(Event *e)
 						SedMessage m;
 						m.sender = it->sender;
 						m.message = resp;
+						m.type = it->type;
 						scroll.push_back(m);
 						break;
 					}
