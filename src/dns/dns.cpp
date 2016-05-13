@@ -52,7 +52,7 @@ COMMAND(dns)
 			info->error("getaddrinfo returned errno " + std::to_string(errno));
 		}
 
-		std::vector<CommandData*> out;
+		std::vector<Data*> out;
 
 		for(rp = r; rp != NULL; rp = rp->ai_next)
 		{
@@ -98,7 +98,7 @@ END_COMMAND
 void DNSPlugin::init(PluginHost *h)
 {
     Bot *b = (Bot*)h;
-    CommandData::add_type("ip", new IPType());
+    Data::add_type("ip", new IPType());
 
     REGISTER_COMMAND(b, dns);
 

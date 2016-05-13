@@ -37,9 +37,9 @@ COMMAND(f)
 	std::string n = info->pop()->to_string();
 
 	std::shared_ptr<ConfigNode> v = bot->config->get("factoids." + n);
-	if(v->type() != NodeType::Null)
+	if(!v->is("null"))
 	{
-		info->next->in.push_back(new StringData(v->as_map()["value"].string));
+		info->next->in.push_back(new StringData(v->as_map()["value"]->to_string()));
 	}
 	else
 	{
@@ -59,12 +59,12 @@ COMMAND(setf)
 	std::string n = info->pop()->to_string();
 	std::string value = info->pop()->to_string();
 
-	ConfigValue vv;
-	vv.type = NodeType::Map;
-	vv.map["value"] = ConfigValue(value);
-	vv.map["time"] = ConfigValue(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
-	vv.map["setter"] = ConfigValue(info->sender->nick);
-	bot->config->set("factoids." + n, vv);
+	std::map<std::string, Data*> m;
+	m["value"] = new StringData(value);
+	m["time"] = new IntData(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+	m["setter"] = new StringData(info->sender->nick);
+	Data *d = new MapData(m);
+	bot->config->set("factoids." + n, d);
 }
 END_COMMAND
 
@@ -80,10 +80,12 @@ COMMAND(finfo)
 	std::string n = info->pop()->to_string();
 
 	std::shared_ptr<ConfigNode> v = bot->config->get("factoids." + n);
-	if(v->type() != NodeType::Null)
+	if(!v->is("null"))
 	{
 		auto m = v->as_map();
-		info->next->in.push_back(new StringData("Set by " + m["setter"].string + " on " + std::ctime(&m["time"].integer)));
+		long t = ((IntData*)m["time"])->i;
+
+		info->next->in.push_back(new StringData("Set by " + m["setter"]->to_string() + " on " + std::ctime(&t)));
 	}
 	else
 	{

@@ -1,28 +1,28 @@
-class IPData : public CommandData
+class IPData : public Data
 {
 	friend class IPType;
 
 public:
-	IPData(std::string s) : CommandData(CommandData::get_type("ip")), str(s)
+	IPData(std::string s) : Data(Data::get_type("ip")), str(s)
 	{}
 private:
 	std::string str;
 };
 
-class IPType : public CommandDataType
+class IPType : public DataType
 {
-	virtual std::string to_string(const CommandData* d)
+	virtual std::string to_string(const Data* d)
 	{
 		if(!d->is_type(this)) { return ""; }
 		return ((IPData*)d)->str;
 	}
 
-	virtual CommandData* from_string(std::string s)
+	virtual Data* from_string(std::string s)
 	{
 		return new IPData(s);
 	}
 
-	virtual std::vector<const CommandData*> select(CommandData *d, std::string t)
+	virtual std::vector<const Data*> select(Data *d, std::string t)
 	{
 		if(t != "ip") 
 		{

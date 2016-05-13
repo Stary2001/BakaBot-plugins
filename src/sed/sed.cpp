@@ -54,14 +54,14 @@ COMMAND(togglesed)
 
 	std::shared_ptr<ConfigNode> v = bot->config->get("sed.disable");
 
-	if(v->type() == NodeType::Null)
+	if(v->is("null"))
 	{
-		ConfigValue vv;
-		vv.type = NodeType::List;
-		bot->config->set("sed.disable", vv);
+		std::vector<Data*> d;
+		bot->config->set("sed.disable", new ListData(d));
 	}
 
-	std::vector<std::string>::iterator it = std::find(v->as_list().begin(), v->as_list().end(), info->target);
+	DataEquals f(info->target);
+	std::vector<Data*>::iterator it = std::find_if(v->as_list().begin(), v->as_list().end(), f);
 	bool exists = it != v->as_list().end();
 
 	if(exists)
@@ -71,7 +71,7 @@ COMMAND(togglesed)
 	}
 	else if(!exists)
 	{
-		v->as_list().push_back(info->target);
+		v->as_list().push_back(new StringData(info->target));
 		bot->conn->send_privmsg(info->target, "Sed disabled.");
 	}
 }
@@ -85,9 +85,10 @@ bool SedPlugin::msg(Event *e)
 	{
 		std::shared_ptr<ConfigNode> v = bot->config->get("sed.disable");
 
-		if(v->type() == NodeType::List)
+		if(v->is("list"))
 		{
-			auto it = std::find(v->as_list().begin(), v->as_list().end(), ev->target);
+			DataEquals f(ev->target);
+			auto it = std::find_if(v->as_list().begin(), v->as_list().end(), f);
 			if(it != v->as_list().end())
 			{
 				return false;

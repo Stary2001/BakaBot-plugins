@@ -32,9 +32,9 @@ COMMAND(ipinfo)
 		info->error("Usage: ipinfo [ips]");
 	}
 
-	CommandData *vv = info->pop();
+	Data *vv = info->pop();
 
-	std::vector<const CommandData*> v = vv->select("ip");
+	std::vector<const Data*> v = vv->select("ip");
 
 	for(auto ip: v)
 	{
@@ -54,7 +54,7 @@ END_COMMAND
 
 void IPInfoPlugin::init(PluginHost *h)
 {
-	CommandData::add_type("ip", new IPType());
+	Data::add_type("ip", new IPType());
 
     Bot *b = (Bot*)h;
 
