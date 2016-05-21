@@ -25,7 +25,7 @@ std::string FactoidPlugin::name()
 	return "factoid";
 }
 
-COMMAND(f)
+COMMAND(f, CommandFlags::None)
 {
 	std::string usage = "Usage: f [name]";
 	if(info->in.size() == 0)
@@ -48,7 +48,7 @@ COMMAND(f)
 }
 END_COMMAND
 
-COMMAND(setf)
+COMMAND(setf, CommandFlags::None)
 {
 	std::string usage = "Usage: setf [name] \"[value]\"";
 	if(info->in.size() != 2)
@@ -68,7 +68,7 @@ COMMAND(setf)
 }
 END_COMMAND
 
-COMMAND(finfo)
+COMMAND(finfo, CommandFlags::None)
 {
 
 	std::string usage = "Usage: finfo [name]";
@@ -93,7 +93,6 @@ COMMAND(finfo)
 	}
 }
 END_COMMAND
-
 
 void FactoidPlugin::init(PluginHost *h)
 {

@@ -47,7 +47,7 @@ std::string SedPlugin::name()
 	return "sed";
 }
 
-COMMAND(togglesed)
+COMMAND(togglesed, CommandFlags::None)
 {
 	if(info->target[0] != '#')
 		return;

@@ -23,7 +23,7 @@ std::string FunPlugin::name()
     return "fun";
 }
 
-COMMAND(choose)
+COMMAND(choose, CommandFlags::None)
 {
 	if(info->in.size() == 0)
 	{

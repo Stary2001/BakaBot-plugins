@@ -28,7 +28,7 @@ std::string WolframPlugin::name()
     return "wolfram";
 }
 
-COMMAND(wolfram)
+COMMAND(wolfram, CommandFlags::OneParam)
 {
 	if(info->in.size() == 0)
 	{

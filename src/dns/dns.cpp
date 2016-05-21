@@ -29,7 +29,7 @@ std::string DNSPlugin::name()
     return "dns";
 }
 
-COMMAND(dns)
+COMMAND(dns, CommandFlags::None)
 {
     if(info->in.size() == 0)
 	{

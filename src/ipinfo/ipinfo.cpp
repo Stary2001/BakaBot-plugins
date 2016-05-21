@@ -25,7 +25,7 @@ std::string IPInfoPlugin::name()
     return "ipinfo";
 }
 
-COMMAND(ipinfo)
+COMMAND(ipinfo, CommandFlags::None)
 {
 	if(info->in.size() == 0)
 	{

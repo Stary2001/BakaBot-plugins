@@ -34,7 +34,7 @@ size_t writefunc(char *ptr, size_t size, size_t nmemb, void *userdata)
 
 //todo: fixup
 
-COMMAND(google)
+COMMAND(google, CommandFlags::OneParam)
 {
 	if(info->in.size() == 0)
 	{
