@@ -4,7 +4,6 @@
 #include "bot.h"
 #include "command.h"
 #include "util.h"
-#include <iostream>
 
 using namespace tinyxml2;
 
@@ -53,9 +52,6 @@ COMMAND(wolfram, CommandFlags::OneParam)
 		}
 
 		XMLElement *e = root->FirstChildElement("pod");
-
-		std::cout << e->Name() << std::endl;
-		std::cout << e->Attribute("id") << std::endl;
 
 		while(e != nullptr)
 		{
